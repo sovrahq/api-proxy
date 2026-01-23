@@ -8,7 +8,7 @@
   "NODE_3_URL": "http://10.9.10.43:8000",
   "NODE_3_PATTERN": "did:quarkid:zksync",
   "NODE_3_BEHAVIOR": 1,
-  "NODE_4_URL": "http://api-did:3000",
+  "NODE_4_URL": "https://node.sovra.io",
   "NODE_4_PATTERN": "did:quarkid:sovra",
   "NODE_4_BEHAVIOR": 1
 }
