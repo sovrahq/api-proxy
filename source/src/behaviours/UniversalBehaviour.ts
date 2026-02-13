@@ -15,11 +15,13 @@ export default class UniversalBehaviour implements Behaviour{
          return res.data
         }catch(error){
             const res = error.response;
+            if(!res)
+                return { error: error.message };
             if(res.status == 404)
                 return 'did not found'
             if(res.status >= 500)
                 return 'universal resolver server error'
-            return 'unknown error'    
+            return 'unknown error'
         }
     }
 

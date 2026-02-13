@@ -9,7 +9,7 @@ export default class SidetreeBehaviour implements Behaviour {
     try {
       return (await axios.get(`${url}/resolve/${did.substring(method_length)}`)).data;
     } catch (error) {
-      return error.response;
+      return error.response?.data ?? { error: error.message };
     }
   }
 
@@ -24,7 +24,7 @@ export default class SidetreeBehaviour implements Behaviour {
     try {
       return (await axios.post(`${url}/create`, request)).data;
     } catch (error) {
-      return error.response;
+      return error.response?.data ?? { error: error.message };
     }
   }
 }
