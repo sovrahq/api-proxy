@@ -25,6 +25,11 @@ export default class UniversalBehaviour implements Behaviour{
         }
     }
 
+    async resolveWithMetadata(did: String, method: string, url: string) {
+        // Universal resolver already uses /1.0/identifiers/ which returns metadata
+        return this.resolve(did, method, url);
+    }
+
     validate(did: String , method:string): boolean {
         return true;
     }

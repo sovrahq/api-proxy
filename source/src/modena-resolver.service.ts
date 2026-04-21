@@ -82,19 +82,70 @@ export class AppService {
       }
     }
   }
-  //5 - Universal y despues full axios
+  async resolveDIDWithMetadata(did: String): Promise<any> {
+    for (let idx = 0; idx < this.getMappings().list.length; idx++) {
+      const pattern = new RegExp("^" + this.getMappings().list[idx].pattern + '*');
+      const actualResolver = this.getMappings().list[idx];
 
+      if (did.match(pattern)) {
+        const behaviour = this.behaviours.get(actualResolver.behavior);
 
-  async createDID(request: CreateDIDRequest): Promise<any> {
-    const didMethod = this.getMappings().list.find(x => x.pattern == request.didMethod);
+        if (!behaviour.validate(did, actualResolver.pattern)) {
+          return "bad did";
+        }
+        return behaviour.resolveWithMetadata(did, actualResolver.pattern, actualResolver.url);
+      }
+    }
+  }
 
-    if (didMethod) {
-      const behaviour = this.behaviours.get(didMethod.behavior)
-      const result = await behaviour.registry(JSON.parse(request.modenaRequest), didMethod.url);
-      return result;
+  async createDID(request: any): Promise<any> {
+    // Wrapped format from universal registry: {modenaRequest, didMethod}
+    if (request.modenaRequest && request.didMethod) {
+      const didMethod = this.getMappings().list.find(x => x.pattern == request.didMethod);
+
+      if (didMethod) {
+        const behaviour = this.behaviours.get(didMethod.behavior)
+        const result = await behaviour.registry(JSON.parse(request.modenaRequest), didMethod.url);
+        return result;
+      }
+
+      throw new Error("Did Method not supported");
     }
 
-    throw new Error("Did Method not supported");
+    // Raw Sidetree operation (update/recover/deactivate) — resolve DID first to find correct backend
+    if (request.type && request.didSuffix) {
+      // Try to resolve the DID suffix against each backend to find which one owns it
+      let targetNode = null;
+      for (const node of this.getMappings().list) {
+        const fullDid = `${node.pattern}:${request.didSuffix}`;
+        try {
+          const resolveResult = await axios.get(`${node.url}/resolve/${request.didSuffix}`);
+          if (resolveResult.data && resolveResult.data.id) {
+            targetNode = node;
+            console.log(`Routed ${request.type} for suffix ${request.didSuffix} to ${node.pattern} (${node.url})`);
+            break;
+          }
+        } catch (e) {
+          // DID not found on this backend, try next
+        }
+      }
+
+      // Forward to the backend that owns the DID, or try all as fallback (for create-like operations)
+      const nodesToTry = targetNode ? [targetNode] : this.getMappings().list;
+      const errors = [];
+      for (const node of nodesToTry) {
+        const behaviour = this.behaviours.get(node.behavior);
+        try {
+          const result = await behaviour.registry(request, node.url);
+          return result;
+        } catch (e) {
+          errors.push(`${node.pattern}: ${e.response?.data ? JSON.stringify(e.response.data) : e.message}`);
+        }
+      }
+      throw new Error(`No backend could process the operation: ${errors.join('; ')}`);
+    }
+
+    throw new Error("Invalid request format");
   }
 }
 

@@ -1,5 +1,8 @@
 {
-  "NODE_1_URL": "http://api-did:3000",
+  "NODE_1_URL": "https://api-did-resolver-sovra-irvxsallvq-uw.a.run.app",
   "NODE_1_PATTERN": "did:quarkid:sovra",
-  "NODE_1_BEHAVIOR": 1
+  "NODE_1_BEHAVIOR": 1,
+  "NODE_2_URL": "https://api-did-resolver-zksync-irvxsallvq-uw.a.run.app",
+  "NODE_2_PATTERN": "did:quarkid",
+  "NODE_2_BEHAVIOR": 1
 }

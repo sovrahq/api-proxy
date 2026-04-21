@@ -13,6 +13,16 @@ export default class SidetreeBehaviour implements Behaviour {
     }
   }
 
+  async resolveWithMetadata(did: String, method: string, url: string) {
+    const method_length = method.length + ((method.slice(-1) === ':') ? 0 : 1);
+    console.log(`getting with metadata: ${url}/1.0/identifiers/${did}`)
+    try {
+      return (await axios.get(`${url}/1.0/identifiers/${did}`)).data;
+    } catch (error) {
+      return error.response?.data ?? { error: error.message };
+    }
+  }
+
   validate(did: String, method: string): boolean {
     const method_length = method.length + ((method.slice(-1) === ':') ? 0 : 1);
     if (did.charAt(method_length - 1) !== ':')

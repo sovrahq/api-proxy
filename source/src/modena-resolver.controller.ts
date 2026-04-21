@@ -23,6 +23,11 @@ export class AppController {
     return await this.appService.resolveDID(new String(did));
   }
 
+  @Get("1.0/identifiers/:did")
+  async getWithMetadata(@Param("did") did: string) {
+    return await this.appService.resolveDIDWithMetadata(new String(did));
+  }
+
   @Post('create')
   async createDID(@Body() request: CreateDIDRequest) {
     return await this.appService.createDID(request);
